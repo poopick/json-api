@@ -92,7 +92,7 @@ app.get('/get_char', (req, res) => {
       return res.status(404).json({ error: 'Character not found' });
     }
 
-    res.status(200).json({ name: character.name, age: character.age });
+    res.status(200).json({ name: character.name, age: character.age, description: character.description });
   });
 });
 
