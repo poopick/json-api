@@ -67,6 +67,31 @@ app.get('/add_char', (req, res) => {
   });
 });
 
+// Get specific character by name
+app.get('/get_char/:name', (req, res) => {
+  const name = req.params.name;
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const characters = json.characters || [];
+    const character = characters.find(c => c.name.toLowerCase() === name.toLowerCase());
+
+    if (!character) {
+      return res.status(404).json({ error: 'Character not found' });
+    }
+
+    res.status(200).json({ name: character.name, age: character.age });
+  });
+});
+
 
 
 
