@@ -38,7 +38,7 @@ app.get('./characters/name_list', (req, res) => {
 // Add character via GET
 // Add character via GET (extended version)
 app.get('/add_char', (req, res) => {
-  const { name, age, personality, goals, visual_description } = req.query;
+  const { name, race, age, personality, goals, visual_description } = req.query;
 
   if (!name || !age || !personality || !goals || !visual_description) {
     return res.status(400).json({ 
@@ -62,6 +62,7 @@ app.get('/add_char', (req, res) => {
 
     const newCharacter = { 
       name,
+      race,
       age: Number(age),
       personality,
       goals,
@@ -105,6 +106,7 @@ app.get('/get_char', (req, res) => {
 
     res.status(200).json({ 
       name: character.name,
+      race: character.race,
       age: character.age,
       personality: character.personality,
       goals: character.goals,
