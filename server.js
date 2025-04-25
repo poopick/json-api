@@ -117,6 +117,45 @@ app.get('/get_char', (req, res) => {
   });
 });
 
+// Update character attributes
+app.post('/update_char', (req, res) => {
+  const { name, race, age, personality, goals, visual_description, relationship } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Name is required to update a character' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const characters = json.characters || [];
+    const character = characters.find(c => c.name.toLowerCase() === name.toLowerCase());
+
+    if (!character) {
+      return res.status(404).json({ error: 'Character not found' });
+    }
+
+    // Update only provided fields
+    if (race !== undefined) character.race = race;
+    if (age !== undefined) character.age = Number(age);
+    if (personality !== undefined) character.personality = personality;
+    if (goals !== undefined) character.goals = goals;
+    if (visual_description !== undefined) character.visual_description = visual_description;
+    if (relationship !== undefined) character.relationship = relationship;
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save updated character' });
+      res.status(200).json({ message: 'Character updated', character });
+    });
+  });
+});
 
 
 
