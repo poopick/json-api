@@ -39,7 +39,7 @@ app.get('./characters/name_list', (req, res) => {
 app.get('/add_char', (req, res) => {
   const { name, age } = req.query;
 
-  if (!name || !age || !description) {
+  if (!name  || !description) {
     return res.status(400).json({ error: 'Name,age and description are required' });
   }
 
