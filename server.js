@@ -37,10 +37,10 @@ app.get('./characters/name_list', (req, res) => {
 
 // Add character via GET
 app.get('/add_char', (req, res) => {
-  const { name, age } = req.query;
+  const { name, age, description } = req.query;
 
-  if (!name || !age) {
-    return res.status(400).json({ error: 'Name and age are required' });
+  if (!name || !age || !description) {
+    return res.status(400).json({ error: 'Name, age and description are required' });
   }
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -57,7 +57,7 @@ app.get('/add_char', (req, res) => {
       json.characters = [];
     }
 
-    const newCharacter = { name, age: Number(age) };
+    const newCharacter = { name, age: Number(age), description };
     json.characters.push(newCharacter);
 
     fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
