@@ -36,11 +36,14 @@ app.get('./characters/name_list', (req, res) => {
 });
 
 // Add character via GET
+// Add character via GET (extended version)
 app.get('/add_char', (req, res) => {
-  const { name, age, description } = req.query;
+  const { name, age, personality, goals, visual_description } = req.query;
 
-  if (!name || !age || !description) {
-    return res.status(400).json({ error: 'Name, age and description are required' });
+  if (!name || !age || !personality || !goals || !visual_description) {
+    return res.status(400).json({ 
+      error: 'Name, age, personality, goals, and visual_description are required'
+    });
   }
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -57,7 +60,14 @@ app.get('/add_char', (req, res) => {
       json.characters = [];
     }
 
-    const newCharacter = { name, age: Number(age), description };
+    const newCharacter = { 
+      name,
+      age: Number(age),
+      personality,
+      goals,
+      visual_description
+    };
+
     json.characters.push(newCharacter);
 
     fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
@@ -66,6 +76,7 @@ app.get('/add_char', (req, res) => {
     });
   });
 });
+
 
 // Get specific character by name
 app.get('/get_char', (req, res) => {
@@ -92,9 +103,16 @@ app.get('/get_char', (req, res) => {
       return res.status(404).json({ error: 'Character not found' });
     }
 
-    res.status(200).json({ name: character.name, age: character.age, description: character.description });
+    res.status(200).json({ 
+      name: character.name,
+      age: character.age,
+      personality: character.personality,
+      goals: character.goals,
+      visual_description: character.visual_description
+    });
   });
 });
+
 
 
 
