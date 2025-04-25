@@ -39,8 +39,8 @@ app.get('./characters/name_list', (req, res) => {
 app.get('/add_char', (req, res) => {
   const { name, age } = req.query;
 
-  if (!name  || !description) {
-    return res.status(400).json({ error: 'Name,age and description are required' });
+  if (!name || !age) {
+    return res.status(400).json({ error: 'Name and age are required' });
   }
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -66,6 +66,7 @@ app.get('/add_char', (req, res) => {
     });
   });
 });
+
 
 
 
