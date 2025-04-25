@@ -38,9 +38,9 @@ app.get('./characters/name_list', (req, res) => {
 // Add character via GET
 // Add character via GET (extended version)
 app.get('/add_char', (req, res) => {
-  const { name, race, age, personality, goals, visual_description } = req.query;
+  const { name, race, age, personality, goals, visual_description, relationship } = req.query;
 
-  if (!name || !age || !personality || !goals || !visual_description) {
+  if (!name || !race || !age || !personality || !goals || !visual_description || !relationship) {
     return res.status(400).json({ 
       error: 'Name, age, personality, goals, and visual_description are required'
     });
@@ -66,7 +66,8 @@ app.get('/add_char', (req, res) => {
       age: Number(age),
       personality,
       goals,
-      visual_description
+      visual_description,
+      relationship
     };
 
     json.characters.push(newCharacter);
@@ -110,7 +111,8 @@ app.get('/get_char', (req, res) => {
       age: character.age,
       personality: character.personality,
       goals: character.goals,
-      visual_description: character.visual_description
+      visual_description: character.visual_description,
+      relationship: character.relationship
     });
   });
 });
