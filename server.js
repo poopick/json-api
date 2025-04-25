@@ -68,8 +68,8 @@ app.get('/add_char', (req, res) => {
 });
 
 // Get specific character by name
-app.get('/get_char/:name', (req, res) => {
-  const name = req.params.name;
+app.get('/get_char', (req, res) => {
+  const name = req.query;
 
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) return res.status(500).json({ error: 'Failed to read file' });
