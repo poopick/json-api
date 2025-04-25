@@ -26,4 +26,14 @@ app.post('/data', (req, res) => {
   });
 });
 
+// Get contact info by character name
+app.get('./characters/name_list', (req, res) => {
+  //const { name } = req.params;
+  fs.readFile('./characters/name_list', 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+    res.json({ contact: character.contact });
+  });
+});
+
+
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
