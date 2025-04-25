@@ -69,7 +69,11 @@ app.get('/add_char', (req, res) => {
 
 // Get specific character by name
 app.get('/get_char', (req, res) => {
-  const name = req.query;
+  const { name } = req.query;
+  
+  if (!name) {
+    return res.status(400).json({ error: 'Name query parameter is required' });
+  }
 
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) return res.status(500).json({ error: 'Failed to read file' });
