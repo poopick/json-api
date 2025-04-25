@@ -118,7 +118,7 @@ app.get('/get_char', (req, res) => {
 });
 
 // Update character attributes
-app.post('/update_char', (req, res) => {
+app.get('/update_char', (req, res) => {
   const { name, race, age, personality, goals, visual_description, relationship } = req.query;
 
   if (!name) {
