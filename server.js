@@ -558,9 +558,9 @@ app.get('/make_sheet', (req, res) => {
       return res.status(500).json({ error: 'Invalid JSON in file' });
     }
 
-    if (!Array.isArray(json.sheets)) {
-      json.sheets = [];
-    }
+    // if (!Array.isArray(json.sheets)) {
+    //   json.sheets = [];
+    // }
 
     // Check if a sheet for this name already exists
     const existingSheet = json.sheets.find(s => s.name.toLowerCase() === name.toLowerCase());
@@ -600,7 +600,7 @@ app.get('/make_sheet', (req, res) => {
       }
     };
 
-    json.sheets.push(newSheet);
+    json.sheet = newSheet;
 
     fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
       if (err) return res.status(500).json({ error: 'Failed to save sheet' });
