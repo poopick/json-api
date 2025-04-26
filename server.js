@@ -582,7 +582,7 @@ app.post('/make_sheet', (req, res) => {
     xp: 0,
     abilities: finalAbilities,
     proficiencies: finalProfs,
-    features: {},
+    features: [],
     equipment: [],
     misc: {
       wealth: { gold: 0 },
