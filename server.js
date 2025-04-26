@@ -558,15 +558,6 @@ app.get('/make_sheet', (req, res) => {
       return res.status(500).json({ error: 'Invalid JSON in file' });
     }
 
-    // if (!Array.isArray(json.sheets)) {
-    //   json.sheets = [];
-    // }
-
-    // Check if a sheet for this name already exists
-    // const existingSheet = json.sheets.find(s => s.name.toLowerCase() === name.toLowerCase());
-    // if (existingSheet) {
-    //   return res.status(400).json({ error: 'A sheet with this name already exists' });
-    // }
 
     const newSheet = {
       name,
@@ -587,7 +578,7 @@ app.get('/make_sheet', (req, res) => {
         weapons: [],
         saving_throws: [],
         skills: [],
-        "expertise ": []
+        expertise : []
       },
       features: {},
       equipment: [],
@@ -631,6 +622,101 @@ app.get('/get_sheet', (req, res) => {
     res.status(200).json(json.sheet);
   });
 });
+
+app.get('/update_sheet', (req, res) => {
+  const { name, race, class: charClass, background, abilities } = req.query;
+
+  
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+
+    if (!json.sheet) {
+      return res.status(404).json({ error: 'Sheet not found' });
+    }
+
+    // Update only provided fields
+    if (name !== undefined) json.name = name;
+    if (race !== undefined) json.race = race;
+    if (charClass !== undefined) json.charClass = charClass;
+    if (notes !== undefined) json.notes = notes;
+    if (background !== undefined) json.background = background;
+    
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save updated location' });
+      res.status(200).json({ message: 'Location updated', location });
+    });
+  });
+});
+
+app.get('/get_sheet', (req, res) => {
+  const { name } = req.query;
+
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    if (!json.sheet) {
+    return res.status(400).json({ error: 'Name query parameter is required to get a sheet' });
+    }
+
+    res.status(200).json(json.sheet);
+  });
+});
+
+app.get('/update_proficiencies', (req, res) => {
+  const { skils, expertise, saving_throws} = req.query;
+
+  
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+
+    if (!json.sheet) {
+      return res.status(404).json({ error: 'Sheet not found' });
+    }
+
+    // Update only provided fields
+    if (name !== undefined) json.name = name;
+    if (race !== undefined) json.race = race;
+    if (charClass !== undefined) json.charClass = charClass;
+    if (notes !== undefined) json.notes = notes;
+    if (skils !== undefined) json.background = background;
+        if (characters !== undefined) {
+      location.characters = characters.split(',').map(c => c.trim());
+    }
+
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save updated location' });
+      res.status(200).json({ message: 'Location updated', location });
+    });
+  });
+});
+
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
