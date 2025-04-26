@@ -9,32 +9,6 @@ app.use(express.json());
 
 const filePath = './data.json';
 
-// Load data
-app.get('/data', (req, res) => {
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
-    res.json(JSON.parse(data || '{}'));
-  });
-});
-
-// Save data
-app.post('/data', (req, res) => {
-  const content = JSON.stringify(req.body, null, 2);
-  fs.writeFile(filePath, content, 'utf8', (err) => {
-    if (err) return res.status(500).json({ error: 'Failed to write file' });
-    res.status(200).json({ message: 'Data saved' });
-  });
-});
-
-// Get contact info by character name
-app.get('./characters/name_list', (req, res) => {
-  //const { name } = req.params;
-  fs.readFile('./characters/name_list', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
-    res.json({ contact: character.contact });
-  });
-});
-
 // Add character via GET
 app.get('/add_char', (req, res) => {
   const { name, race, age, personality, goals, visual_description, relationship } = req.query;
@@ -180,7 +154,13 @@ app.get('/add_location', (req, res) => {
     if (!Array.isArray(json.locations)) {
       json.locations = [];
     }
-
+    
+    // Check if location with the same name already exists
+    const existingLocation = json.loactions.find(q => q.name.toLowerCase() === name.toLowerCase());
+    if (existingLocation) {
+      return res.status(400).json({ error: 'Location with this name already exists' });
+    }
+    
     const newLocation = { 
       name,
       visual_description,
