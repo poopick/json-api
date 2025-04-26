@@ -36,7 +36,6 @@ app.get('./characters/name_list', (req, res) => {
 });
 
 // Add character via GET
-// Add character via GET (extended version)
 app.get('/add_char', (req, res) => {
   const { name, race, age, personality, goals, visual_description, relationship } = req.query;
 
@@ -159,7 +158,7 @@ app.get('/update_char', (req, res) => {
 
 // Add a location via GET
 app.get('/add_location', (req, res) => {
-  const { name, visual_description, region, characters, type, notes } = req.query;
+  const { name, visual_description, region, characters, type, notes ,factions} = req.query;
 
   // Only check for the required fields
   if (!name || !visual_description || !region || !type) {
@@ -188,6 +187,7 @@ app.get('/add_location', (req, res) => {
       region,
       type,
       notes: notes || "", // optional, default to empty string if missing
+      factions: factions || "",
       characters: characters ? characters.split(',').map(c => c.trim()) : [] // optional, default to empty list
     };
 
@@ -231,7 +231,7 @@ app.get('/get_location', (req, res) => {
 
 // Update location attributes via GET
 app.get('/update_location', (req, res) => {
-  const { name, visual_description, region, type, notes, characters } = req.query;
+  const { name, visual_description, region, type, notes, factions, characters } = req.query;
 
   if (!name) {
     return res.status(400).json({ error: 'Name query parameter is required to update a location' });
@@ -259,6 +259,7 @@ app.get('/update_location', (req, res) => {
     if (region !== undefined) location.region = region;
     if (type !== undefined) location.type = type;
     if (notes !== undefined) location.notes = notes;
+    if (factions !== undefined) location.factions = factions;
     if (characters !== undefined) {
       location.characters = characters.split(',').map(c => c.trim());
     }
