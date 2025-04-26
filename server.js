@@ -538,5 +538,76 @@ app.get('/get_quests_list', (req, res) => {
   });
 });
 
+// Create a new character sheet via GET
+app.get('/make_sheet', (req, res) => {
+  const { name, race, class: charClass, background } = req.query;
+
+  if (!name || !race || !charClass || !background) {
+    return res.status(400).json({ 
+      error: 'Name, race, class, level, and background are required to create a sheet'
+    });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON in file' });
+    }
+
+    if (!Array.isArray(json.sheets)) {
+      json.sheets = [];
+    }
+
+    // Check if a sheet for this name already exists
+    const existingSheet = json.sheets.find(s => s.name.toLowerCase() === name.toLowerCase());
+    if (existingSheet) {
+      return res.status(400).json({ error: 'A sheet with this name already exists' });
+    }
+
+    const newSheet = {
+      name,
+      race,
+      class: charClass,
+      background,
+      xp: 0,
+      abilities: {
+        STR: 0,
+        DEX: 0,
+        CON: 0,
+        INT: 0,
+        WIS: 0,
+        CHA: 0
+      },
+      proficiencies: {
+        armor: [],
+        weapons: [],
+        saving_throws: [],
+        skills: [],
+        "expertise ": []
+      },
+      features: {},
+      equipment: [],
+      misc: {
+        wealth: {
+          gold: 0
+        },
+        titles: [],
+        achievements: []
+      }
+    };
+
+    json.sheets.push(newSheet);
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save sheet' });
+      res.status(200).json({ message: 'Character sheet created', sheet: newSheet });
+    });
+  });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
