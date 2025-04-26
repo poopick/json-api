@@ -609,5 +609,28 @@ app.get('/make_sheet', (req, res) => {
   });
 });
 
+// Get character sheet
+app.get('/get_sheet', (req, res) => {
+  const { name } = req.query;
+
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    if (!json.sheet) {
+    return res.status(400).json({ error: 'Name query parameter is required to get a sheet' });
+    }
+
+    res.status(200).json(json.sheet);
+  });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
