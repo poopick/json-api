@@ -635,39 +635,6 @@ app.get('/get_sheet', (req, res) => {
   });
 });
 
-app.get('/update_sheet', (req, res) => {
-  const { name, race, class: charClass, background, abilities } = req.query;
-
-  
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
-
-    let json = {};
-    try {
-      json = JSON.parse(data || '{}');
-    } catch (parseErr) {
-      return res.status(500).json({ error: 'Invalid JSON format' });
-    }
-
-
-    if (!json.sheet) {
-      return res.status(404).json({ error: 'Sheet not found' });
-    }
-
-    // Update only provided fields
-    if (name !== undefined) json.name = name;
-    if (race !== undefined) json.race = race;
-    if (charClass !== undefined) json.charClass = charClass;
-    if (notes !== undefined) json.notes = notes;
-    if (background !== undefined) json.background = background;
-    
-
-    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
-      if (err) return res.status(500).json({ error: 'Failed to save updated location' });
-      res.status(200).json({ message: 'Location updated', location });
-    });
-  });
-});
 
 app.get('/get_sheet', (req, res) => {
   const { name } = req.query;
@@ -691,39 +658,54 @@ app.get('/get_sheet', (req, res) => {
   });
 });
 
-app.get('/update_proficiencies', (req, res) => {
-  const { skils, expertise, saving_throws} = req.query;
+// helper ---------------------------------------------------------------
+function deepMerge(target, source) {
+  for (const key of Object.keys(source)) {
+    if (
+      source[key] !== null &&
+      typeof source[key] === 'object' &&
+      !Array.isArray(source[key]) &&
+      typeof target[key] === 'object'
+    ) {
+      deepMerge(target[key], source[key]);
+    } else {
+      // arrays and primitives just overwrite
+      target[key] = source[key];
+    }
+  }
+  return target;
+}
 
-  
+// PATCH /sheet  --------------------------------------------------------
+app.patch('/update_sheet', (req, res) => {
+  const updates = req.body;           // anything the client wants to change
+
+  if (!updates || typeof updates !== 'object') {
+    return res.status(400).json({ error: 'Request body must be a JSON object' });
+  }
+
   fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
+    if (err && err.code !== 'ENOENT')
+      return res.status(500).json({ error: 'Failed to read file' });
 
     let json = {};
-    try {
-      json = JSON.parse(data || '{}');
-    } catch (parseErr) {
-      return res.status(500).json({ error: 'Invalid JSON format' });
+    if (data) {
+      try { json = JSON.parse(data); }
+      catch { return res.status(500).json({ error: 'Corrupted JSON on disk' }); }
     }
-
 
     if (!json.sheet) {
-      return res.status(404).json({ error: 'Sheet not found' });
+      return res.status(404).json({ error: 'No character sheet found—create one first' });
     }
 
-    // Update only provided fields
-    if (name !== undefined) json.name = name;
-    if (race !== undefined) json.race = race;
-    if (charClass !== undefined) json.charClass = charClass;
-    if (notes !== undefined) json.notes = notes;
-    if (skils !== undefined) json.background = background;
-        if (characters !== undefined) {
-      location.characters = characters.split(',').map(c => c.trim());
-    }
+    // ---- merge incoming updates ----
+    deepMerge(json.sheet, updates);
 
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', err2 => {
+      if (err2)
+        return res.status(500).json({ error: 'Failed to write updated sheet' });
 
-    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
-      if (err) return res.status(500).json({ error: 'Failed to save updated location' });
-      res.status(200).json({ message: 'Location updated', location });
+      res.status(200).json({ message: 'Sheet updated', sheet: json.sheet });
     });
   });
 });
