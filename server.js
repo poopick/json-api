@@ -9,32 +9,6 @@ app.use(express.json());
 
 const filePath = './data.json';
 
-// Load data
-app.get('/data', (req, res) => {
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
-    res.json(JSON.parse(data || '{}'));
-  });
-});
-
-// Save data
-app.post('/data', (req, res) => {
-  const content = JSON.stringify(req.body, null, 2);
-  fs.writeFile(filePath, content, 'utf8', (err) => {
-    if (err) return res.status(500).json({ error: 'Failed to write file' });
-    res.status(200).json({ message: 'Data saved' });
-  });
-});
-
-// Get contact info by character name
-app.get('./characters/name_list', (req, res) => {
-  //const { name } = req.params;
-  fs.readFile('./characters/name_list', 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
-    res.json({ contact: character.contact });
-  });
-});
-
 // Add character via GET
 app.get('/add_char', (req, res) => {
   const { name, race, age, personality, goals, visual_description, relationship } = req.query;
@@ -180,7 +154,13 @@ app.get('/add_location', (req, res) => {
     if (!Array.isArray(json.locations)) {
       json.locations = [];
     }
-
+    
+    // Check if location with the same name already exists
+    const existingLocation = json.loactions.find(q => q.name.toLowerCase() === name.toLowerCase());
+    if (existingLocation) {
+      return res.status(400).json({ error: 'Location with this name already exists' });
+    }
+    
     const newLocation = { 
       name,
       visual_description,
@@ -451,14 +431,12 @@ app.get('/add_quest', (req, res) => {
   });
 });
 
-// Create a new character sheet via GET
-app.get('/make_sheet', (req, res) => {
-  const { name, race, class: charClass, level, background } = req.query;
+// Get a quest by title
+app.get('/get_quest', (req, res) => {
+  const { title } = req.query;
 
-  if (!name || !race || !charClass || !level || !background) {
-    return res.status(400).json({ 
-      error: 'Name, race, class, level, and background are required to create a sheet'
-    });
+  if (!title) {
+    return res.status(400).json({ error: 'Title query parameter is required to get a quest' });
   }
 
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -468,7 +446,89 @@ app.get('/make_sheet', (req, res) => {
     try {
       json = JSON.parse(data || '{}');
     } catch (parseErr) {
-      return res.status(500).json({ error: 'Invalid JSON in file' });
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const quests = json.quests || [];
+    const quest = quests.find(q => q.title.toLowerCase() === title.toLowerCase());
+
+    if (!quest) {
+      return res.status(404).json({ error: 'Quest not found' });
+    }
+
+    res.status(200).json(quest);
+  });
+});
+
+// Update quest attributes via GET
+app.get('/update_quest', (req, res) => {
+  const { title, description, status, locations, reward, notes } = req.query;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Title query parameter is required to update a quest' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const quests = json.quests || [];
+    const quest = quests.find(q => q.title.toLowerCase() === title.toLowerCase());
+
+    if (!quest) {
+      return res.status(404).json({ error: 'Quest not found' });
+    }
+
+    // Update only provided fields
+    if (description !== undefined) quest.description = description;
+    if (status !== undefined) quest.status = status;
+    if (locations !== undefined) quest.locations = locations.split(',').map(l => l.trim());
+    if (reward !== undefined) quest.reward = reward;
+    if (notes !== undefined) quest.notes = notes;
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save updated quest' });
+      res.status(200).json({ message: 'Quest updated', quest });
+    });
+  });
+});
+
+// Get list of all quests
+app.get('/get_quests_list', (req, res) => {
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const quests = json.quests || [];
+    const questTitles = quests.map(q => q.title);
+
+    res.status(200).json({ quests: questTitles });
+  });
+});
+
+
+    // Create a new character sheet via GET
+app.get('/make_sheet', (req, res) => {
+  const { name, race, class: charClass, level, background } = req.query;
+
+  if (!name || !race || !charClass || !level || !background) {
+    return res.status(400).json({ 
+      error: 'Name, race, class, level, and background are required to create a sheet'
+    });
+
+    return res.status(500).json({ error: 'Invalid JSON in file' });
     }
 
     if (!Array.isArray(json.sheets)) {
@@ -522,6 +582,7 @@ app.get('/make_sheet', (req, res) => {
     });
   });
 });
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
