@@ -580,7 +580,7 @@ app.get('/make_sheet', (req, res) => {
       res.status(200).json({ message: 'Character sheet created', sheet: newSheet });
     });
   });
-});
+
 
 
 
