@@ -315,5 +315,54 @@ app.get('/locate_character', (req, res) => {
   });
 });
 
+// Move a character to a new location safely
+app.get('/move_character', (req, res) => {
+  const { name, destination } = req.query;
+
+  if (!name || !destination) {
+    return res.status(400).json({ error: 'Name and destination query parameters are required' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const locations = json.locations || [];
+
+    // Step 1: Remove character from all locations
+    for (const loc of locations) {
+      if (Array.isArray(loc.characters)) {
+        loc.characters = loc.characters.filter(c => c.toLowerCase() !== name.toLowerCase());
+      }
+    }
+
+    // Step 2: Find the destination location
+    const targetLocation = locations.find(loc => loc.name.toLowerCase() === destination.toLowerCase());
+
+    if (!targetLocation) {
+      return res.status(404).json({ error: 'Destination location not found' });
+    }
+
+    // Step 3: Add character to destination
+    if (!Array.isArray(targetLocation.characters)) {
+      targetLocation.characters = [];
+    }
+
+    targetLocation.characters.push(name);
+
+    // Step 4: Save the updated data
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save character movement' });
+      res.status(200).json({ message: `Character '${name}' moved to '${destination}'` });
+    });
+  });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
