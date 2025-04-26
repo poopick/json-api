@@ -563,10 +563,10 @@ app.get('/make_sheet', (req, res) => {
     // }
 
     // Check if a sheet for this name already exists
-    const existingSheet = json.sheets.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existingSheet) {
-      return res.status(400).json({ error: 'A sheet with this name already exists' });
-    }
+    // const existingSheet = json.sheets.find(s => s.name.toLowerCase() === name.toLowerCase());
+    // if (existingSheet) {
+    //   return res.status(400).json({ error: 'A sheet with this name already exists' });
+    // }
 
     const newSheet = {
       name,
