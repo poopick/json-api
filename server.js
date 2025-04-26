@@ -521,7 +521,7 @@ app.get('/get_quests_list', (req, res) => {
 
     // Create a new character sheet via GET
 app.get('/make_sheet', (req, res) => {
-  const { name, race, class, background } = req.query;
+  const { name, race, class: charClass, background } = req.query;
 
   if (!name || !race || !charClass || !background) {
     return res.status(400).json({ 
@@ -544,7 +544,7 @@ app.get('/make_sheet', (req, res) => {
     const newSheet = {
       name,
       race,
-      class,
+      class: charClass,
       background,
       xp: 0,
       abilities: {
