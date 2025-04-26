@@ -229,6 +229,47 @@ app.get('/get_location', (req, res) => {
   });
 });
 
+// Update location attributes via GET
+app.get('/update_location', (req, res) => {
+  const { name, visual_description, region, type, notes, characters } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Name query parameter is required to update a location' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const locations = json.locations || [];
+    const location = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
+
+    if (!location) {
+      return res.status(404).json({ error: 'Location not found' });
+    }
+
+    // Update only provided fields
+    if (visual_description !== undefined) location.visual_description = visual_description;
+    if (region !== undefined) location.region = region;
+    if (type !== undefined) location.type = type;
+    if (notes !== undefined) location.notes = notes;
+    if (characters !== undefined) {
+      location.characters = characters.split(',').map(c => c.trim());
+    }
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save updated location' });
+      res.status(200).json({ message: 'Location updated', location });
+    });
+  });
+});
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
