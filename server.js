@@ -364,5 +364,43 @@ app.get('/move_character', (req, res) => {
   });
 });
 
+// Get list of all locations
+app.get('/get_locations_list', (req, res) => {
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const locations = json.locations || [];
+    const locationNames = locations.map(loc => loc.name);
+
+    res.status(200).json({ locations: locationNames });
+  });
+});
+
+// Get list of all characters
+app.get('/get_characters_list', (req, res) => {
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const characters = json.characters || [];
+    const characterNames = characters.map(c => c.name);
+
+    res.status(200).json({ characters: characterNames });
+  });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
