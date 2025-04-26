@@ -200,6 +200,35 @@ app.get('/add_location', (req, res) => {
   });
 });
 
+// Get location by name via GET
+app.get('/get_location', (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Name query parameter is required to get a location' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const locations = json.locations || [];
+    const location = locations.find(l => l.name.toLowerCase() === name.toLowerCase());
+
+    if (!location) {
+      return res.status(404).json({ error: 'Location not found' });
+    }
+
+    res.status(200).json(location);
+  });
+});
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
