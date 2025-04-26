@@ -403,5 +403,53 @@ app.get('/get_characters_list', (req, res) => {
   });
 });
 
+// Add a quest via GET
+app.get('/add_quest', (req, res) => {
+  const { title, description, status, locations, reward, notes } = req.query;
+
+  if (!title || !description || !locations) {
+    return res.status(400).json({ 
+      error: 'Title, description, and locations are required'
+    });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON in file' });
+    }
+
+    if (!Array.isArray(json.quests)) {
+      json.quests = [];
+    }
+
+    // Check if quest with the same title already exists
+    const existingQuest = json.quests.find(q => q.title.toLowerCase() === title.toLowerCase());
+    if (existingQuest) {
+      return res.status(400).json({ error: 'Quest with this title already exists' });
+    }
+
+    const newQuest = { 
+      title,
+      description,
+      status: status || "available", // default to available
+      locations: locations.split(',').map(l => l.trim()), // split into array
+      reward: reward || "",
+      notes: notes || ""
+    };
+
+    json.quests.push(newQuest);
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save quest' });
+      res.status(200).json({ message: 'Quest added', quest: newQuest });
+    });
+  });
+});
+
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
