@@ -521,9 +521,9 @@ app.get('/get_quests_list', (req, res) => {
 
     // Create a new character sheet via GET
 app.get('/make_sheet', (req, res) => {
-  const { name, race, class: charClass, level, background } = req.query;
+  const { name, race, class, background } = req.query;
 
-  if (!name || !race || !charClass || !level || !background) {
+  if (!name || !race || !charClass || !background) {
     return res.status(400).json({ 
       error: 'Name, race, class, level, and background are required to create a sheet'
     });
@@ -544,8 +544,7 @@ app.get('/make_sheet', (req, res) => {
     const newSheet = {
       name,
       race,
-      class: charClass,
-      level: Number(level),
+      class,
       background,
       xp: 0,
       abilities: {
