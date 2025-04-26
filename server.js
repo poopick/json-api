@@ -270,6 +270,50 @@ app.get('/update_location', (req, res) => {
   });
 });
 
+// Locate a character (find all locations where they are)
+app.get('/locate_character', (req, res) => {
+  const { name } = req.query;
+
+  if (!name) {
+    return res.status(400).json({ error: 'Name query parameter is required to locate a character' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+  const locations = json.locations || [];
+  const foundLocations = [];
+
+  for (const loc of locations) {
+    // Make sure loc.characters is a valid array
+    if (!Array.isArray(loc.characters)) { continue; }// Check if the character is in this location (case-insensitive)
+    const characterExists = loc.characters.some(c => c.toLowerCase() === name.toLowerCase());
+    if (characterExists) {
+      foundLocations.push({
+        name: loc.name,
+        region: loc.region,
+        type: loc.type
+      });
+    }
+  }
+
+    res.status(200).json({ 
+      character: name,
+      locations: foundLocations.map(loc => ({
+        name: loc.name,
+        region: loc.region,
+        type: loc.type
+      }))
+    });
+  });
+});
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
