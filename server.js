@@ -539,28 +539,84 @@ app.get('/get_quests_list', (req, res) => {
 });
 
 // Create a new character sheet via POST
-app.post('/make_sheet', (req, res) => {
-  const {
-    name,
-    race,
-    class: charClass,
-    background,
-    abilities   = {},          // default to empty objects so we can merge defaults
-    proficiencies = {},
-    equipment,
-    misc = {}
-  } = req.body;
+// app.post('/make_sheet', (req, res) => {
+//   const {
+//     name,
+//     race,
+//     class: charClass,
+//     background,
+//     abilities   = {},          // default to empty objects so we can merge defaults
+//     proficiencies = {},
+//     equipment,
+//     misc = {}
+//   } = req.body;
 
-  // —— basic validation ——
-  if (!name || !race || !charClass || !background) {
-    return res.status(400).json({
-      error: 'name, race, class, and background are required'
-    });
-  }
+//   // —— basic validation ——
+//   if (!name || !race || !charClass || !background) {
+//     return res.status(400).json({
+//       error: 'name, race, class, and background are required'
+//     });
+//   }
 
-  // fill in any missing ability scores with 0
-  const defaultScores = { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 };
-  const finalAbilities = { ...defaultScores, ...abilities };
+//   // fill in any missing ability scores with 0
+//   const defaultScores = { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 };
+//   const finalAbilities = { ...defaultScores, ...abilities };
+
+//   // default empty arrays for each prof list
+//   const defaultProfs = {
+//     armor: [],
+//     weapons: [],
+//     savingThrows: [],
+//     skills: [],
+//     expertise: []
+//   };
+//   const finalProfs = Object.fromEntries(
+//     Object.keys(defaultProfs).map(k => [k, proficiencies[k] || defaultProfs[k]])
+//   );
+
+//   const newSheet = {
+//     name,
+//     race,
+//     class: charClass,
+//     background,
+//     HP: 0,
+//     AC: 10,
+//     xp: 0,
+//     abilities: finalAbilities,
+//     proficiencies: finalProfs,
+//     known_spells: [],
+//     prepard_spells: [],
+//     features: [],
+//     equipment: [],
+//     misc: {
+//       wealth: { gold: 0 },
+//       titles: [],
+//       achievements: []
+//     }
+//   };
+
+//   // —— read, update, write the file ——
+//   fs.readFile(filePath, 'utf8', (err, data) => {
+//     if (err && err.code !== 'ENOENT')
+//       return res.status(500).json({ error: 'Failed to read file' });
+
+//     let json = {};
+//     if (data) {
+//       try { json = JSON.parse(data); } 
+//       catch { return res.status(500).json({ error: 'Bad JSON in file' }); }
+//     }
+
+//     json.sheet = newSheet;
+
+//     fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', err2 => {
+//       if (err2) return res.status(500).json({ error: 'Failed to save sheet' });
+//       res.status(201).json({ message: 'Character sheet created', sheet: newSheet });
+//     });
+//   });
+// });
+
+// Create a new blank character sheet via GET
+app.get('/make_sheet', (req, res) => {
 
   // default empty arrays for each prof list
   const defaultProfs = {
@@ -570,26 +626,23 @@ app.post('/make_sheet', (req, res) => {
     skills: [],
     expertise: []
   };
-  const finalProfs = Object.fromEntries(
-    Object.keys(defaultProfs).map(k => [k, proficiencies[k] || defaultProfs[k]])
-  );
 
   const newSheet = {
-    name,
-    race,
-    class: charClass,
-    background,
+    name: "",
+    race : "",
+    class: "",
+    background: "",
     HP: 0,
     AC: 10,
     xp: 0,
-    abilities: finalAbilities,
-    proficiencies: finalProfs,
+    abilities: { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 };,
+    proficiencies: defaultProfs,
     known_spells: [],
     prepard_spells: [],
     features: [],
     equipment: [],
     misc: {
-      wealth: { gold: 0 },
+      gold: 0 ,
       titles: [],
       achievements: []
     }
@@ -614,7 +667,6 @@ app.post('/make_sheet', (req, res) => {
     });
   });
 });
-
 
 // Get character sheet
 app.get('/get_sheet', (req, res) => {
