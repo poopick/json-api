@@ -635,7 +635,7 @@ app.get('/make_sheet', (req, res) => {
     HP: 0,
     AC: 10,
     xp: 0,
-    abilities: { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 };,
+    abilities: { STR: 0, DEX: 0, CON: 0, INT: 0, WIS: 0, CHA: 0 },
     proficiencies: defaultProfs,
     known_spells: [],
     prepard_spells: [],
