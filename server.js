@@ -579,9 +579,13 @@ app.post('/make_sheet', (req, res) => {
     race,
     class: charClass,
     background,
+    HP: 0,
+    AC: 10,
     xp: 0,
     abilities: finalAbilities,
     proficiencies: finalProfs,
+    known_spells: [],
+    prepard_spells: [],
     features: [],
     equipment: [],
     misc: {
@@ -635,28 +639,6 @@ app.get('/get_sheet', (req, res) => {
   });
 });
 
-
-app.get('/get_sheet', (req, res) => {
-  const { name } = req.query;
-
-
-  fs.readFile(filePath, 'utf8', (err, data) => {
-    if (err) return res.status(500).json({ error: 'Failed to read file' });
-
-    let json = {};
-    try {
-      json = JSON.parse(data || '{}');
-    } catch (parseErr) {
-      return res.status(500).json({ error: 'Invalid JSON format' });
-    }
-
-    if (!json.sheet) {
-    return res.status(400).json({ error: 'Name query parameter is required to get a sheet' });
-    }
-
-    res.status(200).json(json.sheet);
-  });
-});
 
 // helper ---------------------------------------------------------------
 function deepMerge(target, source) {
