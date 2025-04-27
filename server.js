@@ -9,6 +9,12 @@ app.use(express.json());
 
 const filePath = './data.json';
 
+app.use((req, res, next) => {
+  console.log(`[${req.method}] ${req.originalUrl}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
 // Load data
 app.get('/data', (req, res) => {
   fs.readFile(filePath, 'utf8', (err, data) => {
