@@ -693,6 +693,70 @@ app.patch('/update_sheet', (req, res) => {
 });
 
 
+// helper to go into an object safely by path
+function getNested(obj, path) {
+  const keys = path.split('.');
+  let current = obj;
+  for (const key of keys.slice(0, -1)) {   // all except last
+    if (!current[key]) return undefined;
+    current = current[key];
+  }
+  return { parent: current, key: keys[keys.length - 1] };
+}
+
+// DELETE /sheet/remove  --------------------------------------------------------
+app.delete('/remove_from_sheet', (req, res) => {
+  const { path, value } = req.body;
+
+  if (!path || typeof path !== 'string') {
+    return res.status(400).json({ error: 'A valid "path" string is required' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err && err.code !== 'ENOENT')
+      return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    if (data) {
+      try { json = JSON.parse(data); }
+      catch { return res.status(500).json({ error: 'Corrupted JSON on disk' }); }
+    }
+
+    if (!json.sheet) {
+      return res.status(404).json({ error: 'No character sheet found' });
+    }
+
+    const target = getNested(json.sheet, path);
+
+    if (!target || !target.parent) {
+      return res.status(400).json({ error: 'Invalid path' });
+    }
+
+    const { parent, key } = target;
+
+    if (!(key in parent)) {
+      return res.status(404).json({ error: `No such field: ${key}` });
+    }
+
+    // ----- remove the item -----
+    if (Array.isArray(parent[key]) && value !== undefined) {
+      // remove a value from an array
+      parent[key] = parent[key].filter(item => item !== value);
+    } else {
+      // remove the field entirely
+      delete parent[key];
+    }
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', err2 => {
+      if (err2)
+        return res.status(500).json({ error: 'Failed to update sheet' });
+
+      res.status(200).json({ message: 'Field/value removed', sheet: json.sheet });
+    });
+  });
+});
+
+
 
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
