@@ -670,8 +670,6 @@ app.get('/make_sheet', (req, res) => {
 
 // Get character sheet
 app.get('/get_sheet', (req, res) => {
-  const { name } = req.query;
-
 
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) return res.status(500).json({ error: 'Failed to read file' });
