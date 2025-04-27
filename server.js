@@ -761,8 +761,8 @@ function getNested(obj, path) {
 }
 
 // DELETE /sheet/remove  --------------------------------------------------------
-app.delete('/remove_from_sheet', (req, res) => {
-  console.log('Incoming DELETE /sheet/remove', req.body);
+app.post('/remove_from_sheet', (req, res) => {
+  console.log('Incoming POST /sheet/remove', req.body);
 
   const { path, value } = req.body;
 
