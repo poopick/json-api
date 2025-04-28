@@ -491,7 +491,7 @@ app.get('/add_scene', (req, res) => {
       title,
       summary,
       locations: locations.split(',').map(l => l.trim()), // split into array
-      charcters: charcters.split(',').map(l => l.trim()), // split into array
+      characters: characters.split(',').map(l => l.trim()), // split into array
       notes: notes || ""
     };
 
