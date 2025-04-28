@@ -459,11 +459,11 @@ app.get('/add_quest', (req, res) => {
 
 // Add a scene via GET
 app.get('/add_scene', (req, res) => {
-  const { title, summary, locations, notes } = req.query;
+  const { title, summary, locations, characters, notes } = req.query;
 
-  if (!title || !locations || !summary) {
+  if (!title || !locations || !summary || !characters) {
     return res.status(400).json({ 
-      error: 'Title, summary, and locations are required'
+      error: 'Title, summary, characters and locations are required'
     });
   }
 
@@ -491,6 +491,7 @@ app.get('/add_scene', (req, res) => {
       title,
       summary,
       locations: locations.split(',').map(l => l.trim()), // split into array
+      charcters: charcters.split(',').map(l => l.trim()), // split into array
       notes: notes || ""
     };
 
@@ -604,7 +605,7 @@ app.get('/update_quest', (req, res) => {
 
 // Update scene attributes via GET
 app.get('/update_scene', (req, res) => {
-  const { title, summary, locations, notes } = req.query;
+  const { title, summary, locations, charcters, notes } = req.query;
 
   if (!title) {
     return res.status(400).json({ error: 'Title query parameter is required to update a scene' });
@@ -630,6 +631,7 @@ app.get('/update_scene', (req, res) => {
     // Update only provided fields
     if (summary !== undefined) scene.summary = summary;
     if (locations !== undefined) scene.locations = locations.split(',').map(l => l.trim());
+    if (characters !== undefined) scene.characters = characters.split(',').map(l => l.trim());    
     if (notes !== undefined) scene.notes = notes;
 
     fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
