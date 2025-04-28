@@ -605,7 +605,7 @@ app.get('/update_quest', (req, res) => {
 
 // Update scene attributes via GET
 app.get('/update_scene', (req, res) => {
-  const { title, summary, locations, charcters, notes } = req.query;
+  const { title, summary, locations, characters, notes } = req.query;
 
   if (!title) {
     return res.status(400).json({ error: 'Title query parameter is required to update a scene' });
