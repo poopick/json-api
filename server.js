@@ -457,6 +457,53 @@ app.get('/add_quest', (req, res) => {
   });
 });
 
+// Add a scene via GET
+app.get('/add_scene', (req, res) => {
+  const { title, summary, locations, notes } = req.query;
+
+  if (!title || !contact || !summary) {
+    return res.status(400).json({ 
+      error: 'Title, summary, and locations are required'
+    });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON in file' });
+    }
+
+    if (!Array.isArray(json.scenes)) {
+      json.scenes = [];
+    }
+
+    // Check if scene with the same title already exists
+    const existingScene = json.scenes.find(q => q.title.toLowerCase() === title.toLowerCase());
+    if (existingScene) {
+      return res.status(400).json({ error: 'Scene with this title already exists' });
+    }
+
+    const newScene = { 
+      title,
+      summary,
+      locations: locations.split(',').map(l => l.trim()), // split into array
+      notes: notes || ""
+    };
+
+    json.scenes.push(newScene);
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save scene' });
+      res.status(200).json({ message: 'Scene added', scene: newScene });
+    });
+  });
+});
+
+
 // Get a quest by title
 app.get('/get_quest', (req, res) => {
   const { title } = req.query;
@@ -485,6 +532,36 @@ app.get('/get_quest', (req, res) => {
     res.status(200).json(quest);
   });
 });
+
+// Get a scene by title
+app.get('/get_scene', (req, res) => {
+  const { title } = req.query;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Title query parameter is required to get a scene' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const scenes = json.scenes || [];
+    const scene = scenes.find(q => q.title.toLowerCase() === title.toLowerCase());
+
+    if (!scene) {
+      return res.status(404).json({ error: 'scene not found' });
+    }
+
+    res.status(200).json(scene);
+  });
+});
+
 
 // Update quest attributes via GET
 app.get('/update_quest', (req, res) => {
@@ -525,6 +602,44 @@ app.get('/update_quest', (req, res) => {
   });
 });
 
+// Update scene attributes via GET
+app.get('/update_scene', (req, res) => {
+  const { title, summary, locations, notes } = req.query;
+
+  if (!title) {
+    return res.status(400).json({ error: 'Title query parameter is required to update a scene' });
+  }
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const scenes = json.scenes || [];
+    const scene = scenes.find(q => q.title.toLowerCase() === title.toLowerCase());
+
+    if (!scene) {
+      return res.status(404).json({ error: 'scene not found' });
+    }
+
+    // Update only provided fields
+    if (summary !== undefined) scene.summary = summary;
+    if (locations !== undefined) scene.locations = locations.split(',').map(l => l.trim());
+    if (notes !== undefined) scene.notes = notes;
+
+    fs.writeFile(filePath, JSON.stringify(json, null, 2), 'utf8', (err) => {
+      if (err) return res.status(500).json({ error: 'Failed to save updated scene' });
+      res.status(200).json({ message: 'scene updated', scene });
+    });
+  });
+});
+
+
 // Get list of all quests
 app.get('/get_quests_list', (req, res) => {
   fs.readFile(filePath, 'utf8', (err, data) => {
@@ -541,6 +656,25 @@ app.get('/get_quests_list', (req, res) => {
     const questTitles = quests.map(q => q.title);
 
     res.status(200).json({ quests: questTitles });
+  });
+});
+
+// Get list of all scenes
+app.get('/get_scenes_list', (req, res) => {
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) return res.status(500).json({ error: 'Failed to read file' });
+
+    let json = {};
+    try {
+      json = JSON.parse(data || '{}');
+    } catch (parseErr) {
+      return res.status(500).json({ error: 'Invalid JSON format' });
+    }
+
+    const scenes = json.scenes || [];
+    const scenesTitles = scenes.map(q => q.title);
+
+    res.status(200).json({ scenes: scenesTitles });
   });
 });
 
