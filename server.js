@@ -461,7 +461,7 @@ app.get('/add_quest', (req, res) => {
 app.get('/add_scene', (req, res) => {
   const { title, summary, locations, notes } = req.query;
 
-  if (!title || !contact || !summary) {
+  if (!title || !locations || !summary) {
     return res.status(400).json({ 
       error: 'Title, summary, and locations are required'
     });
